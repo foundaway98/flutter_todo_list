@@ -15,11 +15,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-          textTheme: const TextTheme(
-              bodyMedium:
-                  TextStyle(fontSize: 24, fontWeight: FontWeight.w200))),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w200),
+        ),
+      ),
       home: const MyHomePage(title: 'To-Do List'),
     );
   }
@@ -36,6 +37,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _textController = TextEditingController();
+  List<String> tasks = [];
 
   String getToday() {
     DateTime now = DateTime.now();
@@ -52,66 +54,85 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            Text(getToday()),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: TextField(
-                      controller: _textController,
-                    ),
-                  ),
-                  ElevatedButton(onPressed: () {}, child: const Text("add"))
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  LinearPercentIndicator(
-                    width: MediaQuery.of(context).size.width - 50,
-                    lineHeight: 14.0,
-                    percent: 0.5,
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              children: [
-                Flexible(
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                        shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.zero))),
-                    onPressed: () {},
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_box_outline_blank_rounded),
-                          Text("Todo 1"),
-                        ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              Text(getToday()),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: TextField(
+                        controller: _textController,
                       ),
                     ),
-                  ),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (_textController.text == '') {
+                            return;
+                          }
+                          setState(() {
+                            tasks.add(_textController.text);
+                            _textController.clear();
+                          });
+                        },
+                        child: const Text("add"))
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text("수정"),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    LinearPercentIndicator(
+                      width: MediaQuery.of(context).size.width - 50,
+                      lineHeight: 14.0,
+                      percent: 0.5,
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text("삭제"),
-                ),
-              ],
-            ),
-          ],
+              ),
+              Column(
+                children: [
+                  for (var task in tasks)
+                    Row(
+                      children: [
+                        Flexible(
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.zero))),
+                            onPressed: () {},
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                      Icons.check_box_outline_blank_rounded),
+                                  Text(task),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text("수정"),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text("삭제"),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
