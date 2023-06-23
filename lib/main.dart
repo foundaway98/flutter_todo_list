@@ -38,6 +38,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _textController = TextEditingController();
   List<String> tasks = [];
+  bool isModifying = false;
+  int modifyingIndex = 0;
 
   String getToday() {
     DateTime now = DateTime.now();
@@ -73,12 +75,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           if (_textController.text == '') {
                             return;
                           }
-                          setState(() {
-                            tasks.add(_textController.text);
-                            _textController.clear();
-                          });
+                          isModifying
+                              ? setState(() {
+                                  tasks[modifyingIndex] = _textController.text;
+                                  _textController.clear();
+                                  modifyingIndex = 0;
+                                  isModifying = false;
+                                })
+                              : setState(() {
+                                  tasks.add(_textController.text);
+                                  _textController.clear();
+                                });
                         },
-                        child: const Text("add"))
+                        child: Text(isModifying ? "modify" : "add"))
                   ],
                 ),
               ),
@@ -97,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Column(
                 children: [
-                  for (var task in tasks)
+                  for (var i = 0; i < tasks.length; i++)
                     Row(
                       children: [
                         Flexible(
@@ -113,18 +122,32 @@ class _MyHomePageState extends State<MyHomePage> {
                                 children: [
                                   const Icon(
                                       Icons.check_box_outline_blank_rounded),
-                                  Text(task),
+                                  Text(tasks[i]),
                                 ],
                               ),
                             ),
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: isModifying
+                              ? null
+                              : () {
+                                  setState(() {
+                                    isModifying = true;
+                                    _textController.text = tasks[i];
+                                    modifyingIndex = i;
+                                  });
+                                },
                           child: const Text("수정"),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: isModifying
+                              ? null
+                              : () {
+                                  setState(() {
+                                    tasks.remove(tasks[i]);
+                                  });
+                                },
                           child: const Text("삭제"),
                         ),
                       ],
