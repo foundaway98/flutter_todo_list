@@ -38,8 +38,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _textController = TextEditingController();
   List<String> tasks = [];
+  List completeTaskFlags = [];
+
   bool isModifying = false;
   int modifyingIndex = 0;
+  double percent = 0.0;
 
   String getToday() {
     DateTime now = DateTime.now();
@@ -84,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 })
                               : setState(() {
                                   tasks.add(_textController.text);
+                                  completeTaskFlags.add(0);
                                   _textController.clear();
                                 });
                         },
@@ -99,61 +103,75 @@ class _MyHomePageState extends State<MyHomePage> {
                     LinearPercentIndicator(
                       width: MediaQuery.of(context).size.width - 50,
                       lineHeight: 14.0,
-                      percent: 0.5,
+                      percent: percent,
                     ),
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  for (var i = 0; i < tasks.length; i++)
-                    Row(
-                      children: [
-                        Flexible(
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.zero))),
-                            onPressed: () {},
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                      Icons.check_box_outline_blank_rounded),
-                                  Text(tasks[i]),
-                                ],
-                              ),
-                            ),
+              for (var i = 0; i < tasks.length; i++)
+                Row(
+                  children: [
+                    Flexible(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.zero),
                           ),
                         ),
-                        TextButton(
-                          onPressed: isModifying
-                              ? null
-                              : () {
-                                  setState(() {
-                                    isModifying = true;
-                                    _textController.text = tasks[i];
-                                    modifyingIndex = i;
-                                  });
-                                },
-                          child: const Text("수정"),
+                        onPressed: () {
+                          setState(() {
+                            int completeTaskCnt = 0;
+                            completeTaskFlags[i] == 1
+                                ? completeTaskFlags[i] = 0
+                                : completeTaskFlags[i] = 1;
+
+                            for (i in completeTaskFlags) {
+                              if (i == 1) {
+                                completeTaskCnt += 1;
+                              }
+                            }
+                            percent = (completeTaskCnt / tasks.length);
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              completeTaskFlags[i] == 1
+                                  ? const Icon(Icons.check_box_rounded)
+                                  : const Icon(
+                                      Icons.check_box_outline_blank_rounded),
+                              Text(tasks[i]),
+                            ],
+                          ),
                         ),
-                        TextButton(
-                          onPressed: isModifying
-                              ? null
-                              : () {
-                                  setState(() {
-                                    tasks.remove(tasks[i]);
-                                  });
-                                },
-                          child: const Text("삭제"),
-                        ),
-                      ],
+                      ),
                     ),
-                ],
-              ),
+                    TextButton(
+                      onPressed: isModifying
+                          ? null
+                          : () {
+                              setState(() {
+                                isModifying = true;
+                                _textController.text = tasks[i];
+                                modifyingIndex = i;
+                              });
+                            },
+                      child: const Text("수정"),
+                    ),
+                    TextButton(
+                      onPressed: isModifying
+                          ? null
+                          : () {
+                              setState(() {
+                                tasks.remove(tasks[i]);
+                                completeTaskFlags.remove(completeTaskFlags[i]);
+                              });
+                            },
+                      child: const Text("삭제"),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
