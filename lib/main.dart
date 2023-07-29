@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_todo_list/task.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
@@ -37,8 +38,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _textController = TextEditingController();
-  List<String> tasks = [];
-  List completeTaskFlags = [];
+  List<Task> tasks = [];
 
   bool isModifying = false;
   int modifyingIndex = 0;
@@ -50,6 +50,16 @@ class _MyHomePageState extends State<MyHomePage> {
     DateFormat formatter = DateFormat('yyyy-MM-dd');
     strToday = formatter.format(now);
     return strToday;
+  }
+
+  void updatePercent() {
+    var completeTaskCnt = 0;
+    for (var i = 0; i < tasks.length; i++) {
+      if (tasks[i].isComplete == true) {
+        completeTaskCnt += 1;
+      }
+    }
+    percent = (completeTaskCnt / tasks.length);
   }
 
   @override
@@ -80,15 +90,17 @@ class _MyHomePageState extends State<MyHomePage> {
                           }
                           isModifying
                               ? setState(() {
-                                  tasks[modifyingIndex] = _textController.text;
+                                  tasks[modifyingIndex].work =
+                                      _textController.text;
                                   _textController.clear();
                                   modifyingIndex = 0;
                                   isModifying = false;
                                 })
                               : setState(() {
-                                  tasks.add(_textController.text);
-                                  completeTaskFlags.add(0);
+                                  var task = Task(_textController.text);
+                                  tasks.add(task);
                                   _textController.clear();
+                                  updatePercent();
                                 });
                         },
                         child: Text(isModifying ? "modify" : "add"))
@@ -120,28 +132,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         onPressed: () {
                           setState(() {
-                            int completeTaskCnt = 0;
-                            completeTaskFlags[i] == 1
-                                ? completeTaskFlags[i] = 0
-                                : completeTaskFlags[i] = 1;
-
-                            for (i in completeTaskFlags) {
-                              if (i == 1) {
-                                completeTaskCnt += 1;
-                              }
-                            }
-                            percent = (completeTaskCnt / tasks.length);
+                            tasks[i].isComplete == false
+                                ? tasks[i].isComplete = true
+                                : tasks[i].isComplete = false;
                           });
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             children: [
-                              completeTaskFlags[i] == 1
+                              tasks[i].isComplete == true
                                   ? const Icon(Icons.check_box_rounded)
                                   : const Icon(
                                       Icons.check_box_outline_blank_rounded),
-                              Text(tasks[i]),
+                              Text(tasks[i].work),
                             ],
                           ),
                         ),
@@ -153,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           : () {
                               setState(() {
                                 isModifying = true;
-                                _textController.text = tasks[i];
+                                _textController.text = tasks[i].work;
                                 modifyingIndex = i;
                               });
                             },
@@ -165,7 +169,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           : () {
                               setState(() {
                                 tasks.remove(tasks[i]);
-                                completeTaskFlags.remove(completeTaskFlags[i]);
                               });
                             },
                       child: const Text("삭제"),
